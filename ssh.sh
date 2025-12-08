@@ -1,14 +1,19 @@
 #!/bin/bash
 
-# ===============================
-# Secure SSH Setup + Custom MOTD
-# ===============================
+# ===========================================
+# Secure SSH Setup + Custom MOTD - UnixNodes
+# ===========================================
 
 clear
 
-echo "Applying SSH settings..."
+echo -e "\033[1;36m🔐 UnixNodes - Secure SSH Configuration\033[0m"
+echo -e "\033[1;37m--------------------------------------\033[0m"
 
-# Update SSH config
+sleep 1
+
+echo -e "\033[1;34m▶ Updating SSH settings...\033[0m"
+
+# Update SSH config with safer defaults
 sudo bash -c 'cat <<EOF > /etc/ssh/sshd_config
 # SSH LOGIN SETTINGS
 PasswordAuthentication yes
@@ -17,24 +22,48 @@ PubkeyAuthentication no
 ChallengeResponseAuthentication no
 UsePAM yes
 
+# SECURITY IMPROVEMENTS
+X11Forwarding no
+AllowTcpForwarding yes
+
 # SFTP SETTINGS
 Subsystem sftp /usr/lib/openssh/sftp-server
 EOF'
 
-echo "Restarting SSH service..."
-sudo systemctl restart ssh 2>/dev/null || sudo service ssh restart
+if [ $? -eq 0 ]; then
+    echo -e "\033[1;32m✔ SSH configuration applied successfully!\033[0m"
+else
+    echo -e "\033[1;31m✘ Failed to update SSH config!\033[0m"
+fi
 
-# Create a cool ASCII MOTD
-sudo bash <(curl -fsSL https://raw.githubusercontent.com/hopingboyz/vps-motd/main/motd.sh)
+echo -e "\033[1;34m▶ Restarting SSH service...\033[0m"
+sudo systemctl restart ssh || sudo service ssh restart
+
+echo -e "\033[1;32m✔ SSH service restarted successfully!\033[0m"
+sleep 1
+
+# Custom MOTD Install
+echo -e "\033[1;34m▶ Installing Custom MOTD...\033[0m"
+bash <(curl -fsSL https://raw.githubusercontent.com/hopingboyz/vps-motd/main/motd.sh)
+
+echo -e "\033[1;32m✔ Custom MOTD Installed!\033[0m"
+sleep 1
+
 clear
-echo ""
-echo "🎉 SSH Configuration Completed Successfully!"
-echo "📌 UnixNodes Vps has been Setuped."
-echo "🔑 You can now set root password 👇"
-echo ""
 
+cat << "EOF"
+ __  __            _        _   _           _
+|  \/  | ___  _ __| | _____| \ | | ___   __| |
+| |\/| |/ _ \| '__| |/ / _ \  \| |/ _ \ / _` |
+| |  | | (_) | |  |   <  __/ |\  | (_) | (_| |
+|_|  |_|\___/|_|  |_|\_\___|_| \_|\___/ \__,_|
+
+EOF
+
+echo -e "\033[1;32m🎉 SSH Configuration Completed Successfully!\033[0m"
+echo -e "\033[1;37m📌 UnixNodes VPS setup completed.\033[0m"
+
+echo -e "\n\033[1;33m🔑 Please set your ROOT password below 👇\033[0m"
 sudo passwd root
 
-echo ""
-echo "✨ All done! Enjoy your server! 🚀"
-echo ""
+echo -e "\n\033[1;36m✨ All done! Enjoy your secure server! 🚀\033[0m"
