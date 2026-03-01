@@ -1,63 +1,98 @@
 #!/bin/bash
-# UnixNodes Advanced MOTD Installer
+# ==========================================
+# RTXCloud Premium MOTD Installer (v2 Ultra)
+# ==========================================
 
-echo "🔧 Installing Custom MOTD..."
+set -e
 
-# Disable default Ubuntu MOTD messages
-chmod -x /etc/update-motd.d/* 2>/dev/null
+echo "🔧 Installing RTXCloud Premium MOTD..."
 
-# Create dynamic stats MOTD script
-cat << 'EOF' > /etc/update-motd.d/00-unixnodes
+# ==========================================
+# Disable ALL default MOTD scripts safely
+# ==========================================
+if [ -d /etc/update-motd.d ]; then
+    echo "⚙ Disabling default MOTD scripts..."
+    find /etc/update-motd.d -type f ! -name "00-rtxcloud" -exec chmod -x {} \; 2>/dev/null || true
+fi
+
+# Remove static MOTD if exists
+[ -f /etc/motd ] && rm -f /etc/motd
+
+# ==========================================
+# Create Premium MOTD Script
+# ==========================================
+cat << 'EOF' > /etc/update-motd.d/00-rtxcloud
 #!/bin/bash
 
-# Colors
-CYAN="\e[38;5;45m"
+# ===== Colors =====
 GREEN="\e[38;5;82m"
+CYAN="\e[38;5;51m"
+BLUE="\e[38;5;39m"
+MAGENTA="\e[38;5;213m"
 YELLOW="\e[38;5;220m"
-BLUE="\e[38;5;51m"
+GRAY="\e[38;5;245m"
 RESET="\e[0m"
 
-# Stats
-LOAD=$(uptime | awk -F 'load average:' '{ print $2 }' | awk '{ print $1 }')
+# ===== Fast System Info =====
+HOSTNAME=$(hostname)
+OS=$(grep PRETTY_NAME /etc/os-release | cut -d= -f2 | tr -d '"')
+KERNEL=$(uname -r)
+UPTIME=$(uptime -p | sed 's/up //')
+LOAD=$(awk '{print $1}' /proc/loadavg)
+
 MEM_TOTAL=$(free -m | awk '/Mem:/ {print $2}')
 MEM_USED=$(free -m | awk '/Mem:/ {print $3}')
 MEM_PERC=$((MEM_USED * 100 / MEM_TOTAL))
-DISK_USED=$(df -h / | awk 'NR==2 {print $3}')
-DISK_TOTAL=$(df -h / | awk 'NR==2 {print $2}')
-DISK_PERC=$(df -h / | awk 'NR==2 {print $5}')
-PROC=$(ps aux | wc -l)
-USERS=$(who | wc -l)
+
+DISK=$(df -h / | awk 'NR==2 {print $3 " / " $2 " (" $5 ")"}')
+
 IP=$(hostname -I | awk '{print $1}')
-UPTIME=$(uptime -p | sed 's/up //')
+USERS=$(who | wc -l)
+PROCS=$(ps -e --no-headers | wc -l)
 
-# Header + Logo
-echo -e "${CYAN}┌──────────────────────────────────────────────────────────────┐"
-echo -e "│  _    _           _           _   _           _              │"
-echo -e "│ | |  | |         (_)         | \\ | |         | |             │"
-echo -e "│ | |  | |  _ __    _  __  __  |  \\| | ___   __| | ___  ___    │"
-echo -e "│ | |  | | | '_ \\  | | \\ \\/ /  | . \` |/ _ \\ / _\` |/ _ \\/ __|   │"
-echo -e "│ | |__| | | | | | | |  >  <   | |\\  | (_) | (_| |  __/\\__ \\   │"
-echo -e "│  \\____/  |_| |_| |_| /_/\\_\\  |_| \\_|\\___/ \\__,_|\\___||___/   │"
-echo -e "└──────────────────────────────────────────────────────────────┘${RESET}"
+echo ""
 
-echo -e "${GREEN} Welcome to UnixNodes Datacenter! 🚀 ${RESET}\n"
+# ===== RTXCloud Logo =====
+echo -e "${MAGENTA}"
+cat << "LOGO"
+██████╗ ████████╗██╗  ██╗ ██████╗██╗      ██████╗ ██╗   ██╗██████╗ 
+██╔══██╗╚══██╔══╝╚██╗██╔╝██╔════╝██║     ██╔═══██╗██║   ██║██╔══██╗
+██████╔╝   ██║    ╚███╔╝ ██║     ██║     ██║   ██║██║   ██║██║  ██║
+██╔══██╗   ██║    ██╔██╗ ██║     ██║     ██║   ██║██║   ██║██║  ██║
+██║  ██║   ██║   ██╔╝ ██╗╚██████╗███████╗╚██████╔╝╚██████╔╝██████╔╝
+╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚══════╝ ╚═════╝  ╚═════╝ ╚═════╝
+LOGO
+echo -e "${RESET}"
 
-# System Stats Table
-echo -e "${BLUE}📊 System Information:${RESET} (as of $(date))\n"
-printf "  ${YELLOW}CPU Load     :${RESET} %s\n" "$LOAD"
-printf "  ${YELLOW}Memory Usage :${RESET} %sMB / %sMB (%s%%)\n" "$MEM_USED" "$MEM_TOTAL" "$MEM_PERC"
-printf "  ${YELLOW}Disk Usage   :${RESET} %s / %s (%s)\n" "$DISK_USED" "$DISK_TOTAL" "$DISK_PERC"
-printf "  ${YELLOW}Processes    :${RESET} %s\n" "$PROC"
-printf "  ${YELLOW}Users Logged :${RESET} %s\n" "$USERS"
-printf "  ${YELLOW}IP Address   :${RESET} %s\n" "$IP"
-printf "  ${YELLOW}Uptime       :${RESET} %s\n\n" "$UPTIME"
+# ===== Header =====
+echo -e "${GREEN}🚀 Welcome to RTXCloud Datacenter${RESET}"
+echo -e "${BLUE}High Performance • Secure • Reliable Infrastructure${RESET}"
+echo -e "${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 
-echo -e "${CYAN}Need help? Support is always available: support@unixnodes.xyz${RESET}"
-echo -e "Website: ${BLUE}unixnodes.xyz${RESET}"
-echo -e "${GREEN}Quality Wise — No Compromise 😄${RESET}"
+# ===== System Stats =====
+printf "${CYAN}%-18s${RESET} %s\n" "Hostname:" "$HOSTNAME"
+printf "${CYAN}%-18s${RESET} %s\n" "Operating System:" "$OS"
+printf "${CYAN}%-18s${RESET} %s\n" "Kernel:" "$KERNEL"
+printf "${CYAN}%-18s${RESET} %s\n" "Uptime:" "$UPTIME"
+printf "${CYAN}%-18s${RESET} %s\n" "CPU Load:" "$LOAD"
+printf "${CYAN}%-18s${RESET} %sMB / %sMB (${YELLOW}%s%%${RESET})\n" \
+"Memory:" "$MEM_USED" "$MEM_TOTAL" "$MEM_PERC"
+printf "${CYAN}%-18s${RESET} %s\n" "Disk Usage:" "$DISK"
+printf "${CYAN}%-18s${RESET} %s\n" "Processes:" "$PROCS"
+printf "${CYAN}%-18s${RESET} %s\n" "Users Online:" "$USERS"
+printf "${CYAN}%-18s${RESET} %s\n" "IP Address:" "$IP"
+
+echo -e "${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+
+# ===== Footer =====
+echo -e "${GREEN}Support:${RESET}  rtxcloud69@gmail.com"
+echo -e "${GREEN}Discord:${RESET}  https://discord.gg/G3rFVwtw35"
+echo -e "${GREEN}Website:${RESET}  https://www.rtxcloud.xyz"
+echo -e "${MAGENTA}Quality Wise — No Compromise 💎${RESET}"
+echo ""
 EOF
 
-chmod +x /etc/update-motd.d/00-unixnodes
+chmod +x /etc/update-motd.d/00-rtxcloud
 
-echo "🎉 UnixNodes MOTD Installed Successfully!"
-echo "➡ Reconnect SSH to see the new MOTD."
+echo "✅ RTXCloud Premium MOTD Installed Successfully!"
+echo "➡ Logout or reconnect SSH to see the new MOTD."
