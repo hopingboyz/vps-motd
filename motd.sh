@@ -7,16 +7,11 @@ set -e
 
 echo "🔧 Installing RTXCloud Premium MOTD..."
 
-# ==========================================
-# Disable ALL default MOTD scripts safely
-# ==========================================
-if [ -d /etc/update-motd.d ]; then
-    echo "⚙ Disabling default MOTD scripts..."
-    find /etc/update-motd.d -type f ! -name "00-rtxcloud" -exec chmod -x {} \; 2>/dev/null || true
-fi
-
-# Remove static MOTD if exists
-[ -f /etc/motd ] && rm -f /etc/motd
+# ================================
+# Disable ALL default MOTD scripts
+# ================================
+echo "⚙ Disabling old MOTD scripts..."
+sudo chmod -x /etc/update-motd.d/* 2>/dev/null || true
 
 # ==========================================
 # Create Premium MOTD Script
